@@ -1,0 +1,55 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "drumkitgen"
+version = "0.1.0"
+description = "Generate and analyze drum kits for electronic music from heuristic prompts — multi-modal (generative models, DSP synthesis, sample recombination)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Dan Newcome" }]
+keywords = [
+    "audio",
+    "drums",
+    "drum-kit",
+    "sampler",
+    "sfz",
+    "music-production",
+    "generative-audio",
+    "dsp",
+    "librosa",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Multimedia :: Sound/Audio :: Analysis",
+    "Topic :: Multimedia :: Sound/Audio :: Sound Synthesis",
+]
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "soundfile>=0.12",
+    "librosa>=0.10",
+    "pydantic>=2.5",
+    "PyYAML>=6.0",
+    "typer>=0.12",
+    "rich>=13.0",
+]
+
+[project.optional-dependencies]
+loudness = ["pyloudnorm>=0.1"]
+dev = ["pytest>=7.0"]
+
+[project.scripts]
+drumkitgen = "drumkitgen.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/dnewcome/drumkitgen"
+Repository = "https://github.com/dnewcome/drumkitgen"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/drumkitgen"]
