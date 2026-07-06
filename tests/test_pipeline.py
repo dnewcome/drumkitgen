@@ -72,6 +72,25 @@ def test_pack_roundtrip(tmp_path: Path):
         assert f"key={piece.playback.root_key}" in sfz
 
 
+def test_report_html_builds_single_and_compare(tmp_path: Path):
+    from drumkitgen.remix import RemixRecipe, remix_kit
+    from drumkitgen.report import build_report_html
+
+    raw = sp.write_demo_samples(tmp_path / "raw")
+    src = build_kit(raw, name="src")
+    write_kit(src, tmp_path / "src")
+    rem = remix_kit(src, tmp_path / "rem", RemixRecipe(sub=0.8))
+
+    single = build_report_html(src, tmp_path / "src", full_doc=True)
+    assert "<svg" in single and "NaN" not in single and "Spectral change" not in single
+
+    compared = build_report_html(src, tmp_path / "src", rem, tmp_path / "rem", full_doc=True)
+    assert "NaN" not in compared
+    assert compared.count("<svg") >= 3          # feature map + 2 heatmaps at least
+    assert "Spectral change" in compared        # diff section only when comparing
+    assert "<table" in compared                 # the accessibility table twin
+
+
 def test_audition_maps_keys_kick_first(tmp_path: Path):
     from drumkitgen import audition as au
 

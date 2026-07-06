@@ -134,6 +134,25 @@ out by filename. Playback uses `sounddevice` for low-latency polyphony if the
 player (`pw-play` / `ffplay` / `paplay` / `aplay`). Press `?` for the legend,
 `Ctrl-C`/`ESC` to quit.
 
+**Report** — render a self-contained HTML page that characterizes a kit's samples
+and, with `--compare`, exactly how a remix changed them:
+
+```bash
+drumkitgen report out/my-kit --compare out/my-kit-remix --open
+```
+
+It's pure inline SVG (no plotting library, no external assets, works headless)
+and includes:
+- a **feature map** (spectral centroid × sub-energy, colored by slot family) with
+  **before→after arrows** showing how each sound moved,
+- a **spectral heatmap** (energy per frequency band) characterizing the input,
+- a **change heatmap** (diverging: energy gained/lost per band),
+- **waveform envelopes** overlaying source vs remix, and
+- a **table view** of every measurement.
+
+Colors come from a colorblind-validated palette; light and dark themes are both
+first-class.
+
 The demo analyzes and classifies eight synthesized drums, lays them out across
 the General MIDI keys, and writes the packaged kit:
 
@@ -302,6 +321,7 @@ src/drumkitgen/
 ├── ingest.py        # folder -> Kit -> disk (the pack pipeline)
 ├── remix.py         # transform producer: re-voice a kit with slot-aware DSP
 ├── audition.py      # interactive terminal drum pad (keys -> samples)
+├── report.py        # self-contained SVG HTML report (stats + before/after)
 ├── render/sfz.py    # Kit -> .sfz
 ├── io_yaml.py       # Kit <-> kit.yaml
 ├── synth_probe.py   # DSP one-shot synths (demo kit, test fixtures)

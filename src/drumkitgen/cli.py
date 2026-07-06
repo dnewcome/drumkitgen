@@ -173,6 +173,44 @@ def _compare_table(src, dst) -> Table:
     return table
 
 
+def _load_kit_and_base(path: Path):
+    """Return (Kit, base_dir) for a kit dir with kit.yaml or a kit.yaml file."""
+    from .io_yaml import read as read_kit
+
+    if path.is_file() and path.suffix in (".yaml", ".yml"):
+        return read_kit(path), path.parent
+    if path.is_dir() and (path / "kit.yaml").exists():
+        return read_kit(path / "kit.yaml"), path
+    raise typer.BadParameter(f"{path} is not a kit (no kit.yaml found)")
+
+
+@app.command()
+def report(
+    input_kit: Path = typer.Argument(..., help="A kit directory (with kit.yaml) or a kit.yaml file."),
+    compare: Optional[Path] = typer.Option(None, "--compare", "-c", help="A second kit to diff against (e.g. a remix)."),
+    out: Optional[Path] = typer.Option(None, "--out", "-o", help="Output dir (default: <kit>/report)."),
+    open_browser: bool = typer.Option(False, "--open", help="Open the report in a browser when done."),
+) -> None:
+    """Render an HTML report characterizing a kit (and how a remix changed it)."""
+    from .report import write_report
+
+    before, base_before = _load_kit_and_base(input_kit)
+    after = base_after = None
+    if compare is not None:
+        after, base_after = _load_kit_and_base(compare)
+
+    out_dir = out or (base_before / "report")
+    with console.status("[bold]rendering report…"):
+        dest = write_report(before, base_before, out_dir, after=after, base_after=base_after)
+
+    console.print(f"[green]✓[/green] report written to [bold]{dest}[/bold]")
+    console.print(f"  open with: [dim]xdg-open {dest}[/dim]")
+    if open_browser:
+        import webbrowser
+
+        webbrowser.open(dest.resolve().as_uri())
+
+
 @app.command()
 def audition(
     input_path: Path = typer.Argument(..., help="A kit folder, a kit dir with kit.yaml, a kit.yaml, or a folder of audio."),
