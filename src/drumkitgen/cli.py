@@ -10,6 +10,7 @@ Commands map onto the spine:
 
 from __future__ import annotations
 
+import sys
 import tempfile
 from pathlib import Path
 from typing import Optional
@@ -170,6 +171,61 @@ def _compare_table(src, dst) -> Table:
             " · ".join(p.source.chain) or "—",
         )
     return table
+
+
+@app.command()
+def audition(
+    input_path: Path = typer.Argument(..., help="A kit folder, a kit dir with kit.yaml, a kit.yaml, or a folder of audio."),
+    engine: str = typer.Option("auto", "--engine", "-e", help="Playback engine: auto | rt | subprocess."),
+    list_only: bool = typer.Option(False, "--list", "-l", help="Print the key map and exit (no interaction)."),
+) -> None:
+    """Interactive terminal drum pad: map keys to samples and play on keypress."""
+    from . import audition as au
+
+    pads = au.collect_pads(input_path)
+    keymap = {pad.key: pad for pad in pads}
+
+    def show_legend() -> None:
+        table = Table(title=f"audition · {Path(input_path).name}  ({len(pads)} pads)", title_style="bold")
+        table.add_column("key", style="bold cyan", justify="center")
+        table.add_column("sample", style="green")
+        table.add_column("info", style="dim")
+        for pad in pads:
+            table.add_row(pad.key, pad.label, pad.sublabel)
+        console.print(table)
+
+    show_legend()
+
+    if list_only or not sys.stdin.isatty():
+        if not list_only:
+            console.print("[yellow]stdin is not a TTY[/yellow] — run in a real terminal to trigger pads.")
+        return
+
+    try:
+        eng = au.make_engine(engine, pads)
+    except Exception as exc:  # no player / no device
+        console.print(f"[red]could not start audio:[/red] {exc}")
+        raise typer.Exit(1)
+
+    console.print(f"[dim]engine:[/dim] {eng.detail}    [dim]keys:[/dim] play · [bold]?[/bold] legend · [bold]Ctrl-C/ESC[/bold] quit\n")
+    try:
+        with au._cbreak():
+            while True:
+                k = au._read_key()
+                if k in ("ESC", "\x03"):
+                    break
+                if k == "?":
+                    show_legend()
+                    continue
+                pad = keymap.get(k)
+                if pad is not None:
+                    eng.trigger(pad)
+                    console.print(f"[cyan]▶ {pad.key}[/cyan]  [green]{pad.label}[/green]  [dim]{pad.sublabel}[/dim]")
+    except KeyboardInterrupt:
+        pass
+    finally:
+        eng.close()
+    console.print("\n[dim]bye.[/dim]")
 
 
 @app.command()

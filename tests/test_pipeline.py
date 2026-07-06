@@ -72,6 +72,27 @@ def test_pack_roundtrip(tmp_path: Path):
         assert f"key={piece.playback.root_key}" in sfz
 
 
+def test_audition_maps_keys_kick_first(tmp_path: Path):
+    from drumkitgen import audition as au
+
+    raw = sp.write_demo_samples(tmp_path / "raw")
+    build_kit(raw, name="k")  # ensure builder works
+    out = write_kit(build_kit(raw, name="k"), tmp_path / "kit")
+
+    pads = au.collect_pads(out)  # kit dir with kit.yaml
+    # Ordered by MIDI key, so the kick (GM 36, lowest) lands on the first pad.
+    assert pads[0].key == au.PAD_KEYS[0]
+    assert pads[0].label == "kick_01"
+    assert "kick" in pads[0].sublabel
+    # Keys are unique and drawn from the pad layout.
+    keys = [p.key for p in pads]
+    assert len(keys) == len(set(keys)) == len(sp.DEMO_KIT)
+
+    # Also works on a raw folder (no kit.yaml), ordered by filename.
+    folder_pads = au.collect_pads(raw)
+    assert len(folder_pads) == len(sp.DEMO_KIT)
+
+
 def test_sub_layer_adds_low_end():
     # The DSP claim, tested directly on a sound that starts with ~no sub.
     from drumkitgen.remix import sub_layer

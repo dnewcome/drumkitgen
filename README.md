@@ -55,7 +55,9 @@ schema to be designed properly before anything depends on it.
 git clone https://github.com/dnewcome/drumkitgen
 cd drumkitgen
 python -m venv .venv && source .venv/bin/activate
-pip install -e ".[loudness]"      # loudness extra adds LUFS metering
+pip install -e ".[loudness]"                # loudness extra adds LUFS metering
+# optional: low-latency engine for the interactive `audition` pad
+pip install -e ".[loudness,audition]"       # adds sounddevice
 ```
 
 ## Quickstart
@@ -105,6 +107,32 @@ drumkitgen remix out/my-kit --out out/my-kit-remix \
 
 The source kit is never touched; the remix is a derivative whose `source.chain`
 says exactly how to reproduce it.
+
+**Audition** a kit (or any folder of one-shots) as an interactive terminal drum
+pad — it auto-maps keyboard keys to samples and plays them on keypress:
+
+```bash
+drumkitgen audition out/my-kit-remix
+```
+
+```
+             audition · metalhead-remix  (9 pads)
+┏━━━━━┳━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ key ┃ sample              ┃ info                           ┃
+┡━━━━━╇━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│  a  │ dark_kick11         │ kick · 131ms · 3.3k · sub 71%  │
+│  s  │ temple_kick14       │ kick · 172ms · 2.2k · sub 88%  │
+│  d  │ liquid_snare33      │ snare · 497ms · 4.8k · sub 19% │
+│  h  │ future_hat03        │ hat_closed · 182ms · 9.4k      │
+│ ... │                     │                                │
+└─────┴─────────────────────┴────────────────────────────────┘
+```
+
+A kit is laid out by MIDI key (kick under the resting `a`); a raw folder is laid
+out by filename. Playback uses `sounddevice` for low-latency polyphony if the
+`[audition]` extra is installed, otherwise it shells out to an installed CLI
+player (`pw-play` / `ffplay` / `paplay` / `aplay`). Press `?` for the legend,
+`Ctrl-C`/`ESC` to quit.
 
 The demo analyzes and classifies eight synthesized drums, lays them out across
 the General MIDI keys, and writes the packaged kit:
@@ -273,6 +301,7 @@ src/drumkitgen/
 ├── layout.py        # assign MIDI keys to pieces
 ├── ingest.py        # folder -> Kit -> disk (the pack pipeline)
 ├── remix.py         # transform producer: re-voice a kit with slot-aware DSP
+├── audition.py      # interactive terminal drum pad (keys -> samples)
 ├── render/sfz.py    # Kit -> .sfz
 ├── io_yaml.py       # Kit <-> kit.yaml
 ├── synth_probe.py   # DSP one-shot synths (demo kit, test fixtures)

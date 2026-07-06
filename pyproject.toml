@@ -42,6 +42,7 @@ dependencies = [
 
 [project.optional-dependencies]
 loudness = ["pyloudnorm>=0.1"]
+audition = ["sounddevice>=0.4"]  # low-latency real-time engine for `drumkitgen audition`
 dev = ["pytest>=7.0"]
 
 [project.scripts]
