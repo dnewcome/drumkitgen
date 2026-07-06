@@ -276,6 +276,10 @@ on the keys any DAW drum instrument expects:
 
 ## Roadmap
 
+Detailed, fleshed-out plans live in **[ROADMAP.md](ROADMAP.md)** — the next focus
+is a **variation & randomization** loop (seeded, reproducible rolls; per-slot
+locks + mutation; an interactive terminal explorer built on the audition pad).
+
 The spine is built so each of these is an additive *producer* or *render target*,
 not a rewrite:
 
@@ -283,6 +287,9 @@ not a rewrite:
 - [x] **Remix / synthesis "beef-up" (first cut)** — `drumkitgen remix` re-voices a
       kit with slot-aware DSP (sub-layer, saturation, tune) and records the
       transform chain in provenance
+- [ ] **Variation & randomization** *(next — see [ROADMAP.md](ROADMAP.md))* —
+      seeded/reproducible rolls, per-slot locks + mutation, and an interactive
+      terminal explorer (`explore`) + batch generator (`vary`)
 - [ ] **API generation** — prompt → hosted text-to-audio → classified one-shots
 - [ ] **Local generation** — self-hosted models (e.g. Stable Audio Open) for
       overnight bulk generation of one-shots
